@@ -159,14 +159,14 @@ const SECTIONS = [
 {k:'prmin',  label:'Min ticks in window', min:0, max:200, step:1, dec:0, def:15, zero:'off', note:'skip quiet moments'},
 {k:'prdist', label:'Entry', min:0, max:20, step:0.5, dec:1, def:0, pips:true, zero:'market straight away', note:'level this far from price'},
 ]},
+{ title:'Commission trail (ECN)', toggle:'ctrail', fields:[
+{k:'ctdist', label:'Trail behind price', min:0.5, max:10, step:0.1, dec:1, def:1, pips:true, note:'starts as soon as the commission is covered'},
+{k:'cman',   label:'Commission per lot', min:0, max:20, step:0.1, dec:2, def:0, unit:'$', zero:'auto-detect', note:'round-turn, $ per 1.00 lot'},
+]},
 { title:'Trailing stop', toggle:'trail', fields:[
 {k:'tstart', label:'Start after',  min:0,   max:50, step:0.5, dec:1, def:4,   pips:true, note:'profit'},
 {k:'tdist',  label:'Distance',     min:0.5, max:50, step:0.5, dec:1, def:3,   pips:true, note:'behind price'},
 {k:'tstep',  label:'Step',         min:0.1, max:10, step:0.1, dec:1, def:0.5, pips:true},
-]},
-{ title:'Never go negative', toggle:'be', fields:[
-{k:'betrig', label:'Lock profit at', min:0, max:50, step:0.5, dec:1, def:3, pips:true, note:'profit reached'},
-{k:'belock', label:'Locked profit',  min:0, max:20, step:0.5, dec:1, def:1, pips:true, note:'kept above entry'},
 ]},
 { title:'Filters', fields:[
 {k:'spread', label:'Max spread',     min:0, max:30, step:0.5, dec:1, def:5, pips:true, zero:'off'},
@@ -234,7 +234,7 @@ document.getElementById('stamp').textContent = ts
 // state
 const orig = {}, cur = {};
 SECTIONS.forEach(s => s.fields.forEach(f => { orig[f.k] = cur[f.k] = num(f.k, f.def); }));
-const TOGGLES = ['body','trail','be','oneper','session','sprsl','sprtp','guard','glive','pguard','spike','confirm'];
+const TOGGLES = ['body','trail','oneper','session','sprsl','sprtp','guard','glive','pguard','spike','confirm','ctrail'];
 const TOGGLE_OFF_DEFAULT = ['session','sprsl','sprtp','glive','guard'];
 TOGGLES.forEach(t => {
 const d = TOGGLE_OFF_DEFAULT.includes(t) ? 0 : 1;
@@ -374,9 +374,6 @@ r.small.textContent = subText(f);
 r.row.classList.toggle('changed', v !== orig[f.k]);
 });
 // break-even sanity
-const bad = cur.betrig > 0 && cur.belock >= cur.betrig;
-rows.belock.warn.style.display = bad ? 'block' : 'none';
-rows.belock.warn.textContent = 'Must be smaller than "Lock profit at". The EA will halve it.';
 const tightTrail = cur.t_trail && cur.tdist * pipVal() < 0.2;
 rows.tdist.warn.style.display = tightTrail ? 'block' : 'none';
 rows.tdist.warn.textContent = 'Tighter than a normal gold spread. Spread noise may close trades early.';

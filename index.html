@@ -132,7 +132,8 @@ font-family:inherit; font-size:16px; font-weight:600; line-height:1; display:non
 <button class="fallback" id="saveFallback" type="button">Save to EA</button>
 <script>
 const tg = window.Telegram && window.Telegram.WebApp;
-const inTelegram = !!(tg && tg.initData);
+// Opened from a keyboard button, Telegram gives no initData, so check the platform too
+const inTelegram = !!(tg && (tg.initData || (tg.platform && tg.platform !== 'unknown')));
 if (inTelegram) document.documentElement.classList.add('tg');
 const q = new URLSearchParams(location.search);
 const num = (k, d) => { const v = parseFloat(q.get(k)); return isFinite(v) ? v : d; };
@@ -374,7 +375,10 @@ tg.MainButton.onClick(save);
 document.getElementById('notice').style.display = 'block';
 const fb = document.getElementById('saveFallback');
 fb.style.display = 'block';
-fb.addEventListener('click', () => alert('Open this from the Settings button in Telegram to save.\n\n' + payload()));
+fb.addEventListener('click', () => {
+if (tg && tg.sendData) { try { tg.sendData(payload()); return; } catch (e) {} }
+alert('Open this from the Settings button in Telegram to save.');
+});
 }
 refresh();
 </script>

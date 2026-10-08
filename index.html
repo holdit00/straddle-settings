@@ -144,10 +144,14 @@ const SECTIONS = [
 {k:'dist', label:'Pending distance',min:1,   max:100, step:0.5, dec:1, def:10, pips:true, note:'from price'},
 {k:'sl',   label:'Stop loss',       min:0,   max:100, step:0.5, dec:1, def:10, pips:true, zero:'no stop loss'},
 {k:'tp',   label:'Take profit',     min:0,   max:200, step:0.5, dec:1, def:0,  pips:true, zero:'off'},
+], extraToggles:[
+{k:'sprsl', label:'Add spread to stop loss',   note:'More room from the Ask/Bid line. Max loss = stop loss + spread'},
+{k:'sprtp', label:'Add spread to take profit', note:'Target is pushed out by the spread when the order is placed'},
 ]},
 { title:'Entry rule', toggle:'body', fields:[
 {k:'body', label:'Min M1 candle body', min:0, max:100, step:0.5, dec:1, def:10, pips:true, note:'last candle must be bigger'},
-], dir:true, extraToggle:{k:'oneper', label:'One trade per candle', note:'Wait for a new qualifying candle after each trade'} },
+{k:'skipsec', label:'Wait after new candle', min:0, max:59, step:1, dec:0, def:10, unit:'sec', zero:'off', note:'no new straddle in the first seconds of each M1 candle'},
+], dir:true, extraToggles:[{k:'oneper', label:'One trade per candle', note:'Wait for a new qualifying candle after each trade'}] },
 { title:'Trailing stop', toggle:'trail', fields:[
 {k:'tstart', label:'Start after',  min:0,   max:50, step:0.5, dec:1, def:4,   pips:true, note:'profit'},
 {k:'tdist',  label:'Distance',     min:0.5, max:50, step:0.5, dec:1, def:3,   pips:true, note:'behind price'},
@@ -201,8 +205,10 @@ document.getElementById('stamp').textContent = ts
 // state
 const orig = {}, cur = {};
 SECTIONS.forEach(s => s.fields.forEach(f => { orig[f.k] = cur[f.k] = num(f.k, f.def); }));
-['body','trail','be','oneper','session'].forEach(t => {
-const d = (t === 'session') ? 0 : 1;
+const TOGGLES = ['body','trail','be','oneper','session','sprsl','sprtp'];
+const TOGGLE_OFF_DEFAULT = ['session','sprsl','sprtp'];
+TOGGLES.forEach(t => {
+const d = TOGGLE_OFF_DEFAULT.includes(t) ? 0 : 1;
 orig['t_'+t] = cur['t_'+t] = num('t_'+t, d) ? 1 : 0;
 });
 orig.dir = cur.dir = Math.min(2, Math.max(0, Math.round(num('dir', 0))));
@@ -215,7 +221,8 @@ function subText(f){
 const v = cur[f.k];
 if (f.zero && v === 0) return f.zero[0].toUpperCase() + f.zero.slice(1);
 const usd = '$' + (v * pipVal()).toFixed(2);
-if (f.pips) return f.note ? f.note[0].toUpperCase() + f.note.slice(1) + ' (' + usd + ')' : usd + ' price move';
+const plus = ((f.k === 'sl' && cur.t_sprsl) || (f.k === 'tp' && cur.t_sprtp)) ? ' + spread' : '';
+if (f.pips) return (f.note ? f.note[0].toUpperCase() + f.note.slice(1) + ' (' + usd + ')' : usd + ' price move') + plus;
 return f.note ? f.note[0].toUpperCase() + f.note.slice(1) : (f.unit === '$' ? 'In account currency' : '');
 }
 const rows = {};
@@ -303,7 +310,7 @@ seg.appendChild(b);
 rows.dir = {row, seg};
 card.appendChild(row);
 }
-if (s.extraToggle) card.appendChild(buildSwitchRow('t_' + s.extraToggle.k, s.extraToggle.label, s.extraToggle.note));
+(s.extraToggles || []).forEach(x => card.appendChild(buildSwitchRow('t_' + x.k, x.label, x.note)));
 sec.append(head, card);
 app.appendChild(sec);
 });
@@ -331,7 +338,11 @@ rows.tdist.warn.style.display = tightTrail ? 'block' : 'none';
 rows.tdist.warn.textContent = 'Tighter than a normal gold spread. Spread noise may close trades early.';
 // switches / cards
 Object.entries(cards).forEach(([k, c]) => { c.cb.checked = !!cur[k]; c.card.classList.toggle('disabled', !cur[k]); });
-if (rows.t_oneper){ rows.t_oneper.cb.checked = !!cur.t_oneper; rows.t_oneper.row.classList.toggle('changed', cur.t_oneper !== orig.t_oneper); }
+Object.entries(rows).forEach(([k, r]) => {
+if (!r.cb) return;
+r.cb.checked = !!cur[k];
+r.row.classList.toggle('changed', cur[k] !== orig[k]);
+});
 [...rows.dir.seg.children].forEach((b, i) => b.setAttribute('aria-pressed', i === cur.dir));
 rows.dir.row.classList.toggle('changed', cur.dir !== orig.dir);
 const st = document.getElementById('state');
@@ -355,7 +366,7 @@ fb.textContent = label; fb.disabled = !n;
 function payload(){
 const parts = [];
 SECTIONS.forEach(s => s.fields.forEach(f => parts.push(f.k + '=' + fmt(cur[f.k], f.dec))));
-['body','trail','be','oneper','session'].forEach(t => parts.push('t_' + t + '=' + cur['t_' + t]));
+TOGGLES.forEach(t => parts.push('t_' + t + '=' + cur['t_' + t]));
 parts.push('dir=' + cur.dir, 'run=' + cur.run);
 if (pinReq) parts.push('pin=' + pinEl.value);
 return 'SET|' + parts.join(';');

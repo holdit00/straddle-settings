@@ -174,13 +174,17 @@ const SECTIONS = [
 {k:'start', label:'Start hour', min:0, max:24, step:1, dec:0, def:0},
 {k:'end',   label:'End hour',   min:0, max:24, step:1, dec:0, def:24},
 ]},
-{ title:'Fakeout guard', toggle:'guard', fields:[
+{ title:'Fakeout guard (before entry)', toggle:'pguard', fields:[
+{k:'pnear', label:'Price gets within', min:0, max:10, step:0.5, dec:1, def:2, pips:true, note:'of a pending order'},
+{k:'pback', label:'Then pulls back',   min:0.5, max:20, step:0.5, dec:1, def:3, pips:true, note:'without filling = fakeout'},
+{k:'rmax',  label:'Max rearms per candle', min:0, max:10, step:1, dec:0, def:1, zero:'unlimited'},
+]},
+{ title:'After-entry guard (closes the trade)', toggle:'guard', fields:[
 {k:'gsec',   label:'Check after',        min:1, max:60, step:1,   dec:0, def:15, unit:'sec', note:'seconds after the trade opens'},
 {k:'gprog',  label:'Fakeout if best profit below', min:0, max:10, step:0.5, dec:1, def:1, pips:true},
 {k:'gticks', label:'Ticks against at least', min:0, max:20, step:1, dec:0, def:2, zero:'ignore ticks', note:'ticks against minus ticks with'},
 {k:'gfast',  label:'Instant fail at',    min:0, max:20, step:0.5, dec:1, def:6, pips:true, zero:'off', note:'move against before any profit'},
 {k:'rdist',  label:'Rearm distance',     min:1, max:30, step:0.5, dec:1, def:5, pips:true, note:'from price'},
-{k:'rmax',   label:'Max rearms per candle', min:0, max:10, step:1, dec:0, def:1, zero:'unlimited'},
 ], rearm:true, extraToggles:[{k:'glive', label:'Live (closes trades)', note:'Off = shadow mode: only logs what it would do'}] },
 { title:'Advanced', fields:[
 {k:'pip', label:'Pip size', min:0.01, max:1, step:0.01, dec:2, def:0.10, unit:'$', note:'price move that counts as 1 pip'},
@@ -214,8 +218,8 @@ document.getElementById('stamp').textContent = ts
 // state
 const orig = {}, cur = {};
 SECTIONS.forEach(s => s.fields.forEach(f => { orig[f.k] = cur[f.k] = num(f.k, f.def); }));
-const TOGGLES = ['body','trail','be','oneper','session','sprsl','sprtp','guard','glive'];
-const TOGGLE_OFF_DEFAULT = ['session','sprsl','sprtp','glive'];
+const TOGGLES = ['body','trail','be','oneper','session','sprsl','sprtp','guard','glive','pguard'];
+const TOGGLE_OFF_DEFAULT = ['session','sprsl','sprtp','glive','guard'];
 TOGGLES.forEach(t => {
 const d = TOGGLE_OFF_DEFAULT.includes(t) ? 0 : 1;
 orig['t_'+t] = cur['t_'+t] = num('t_'+t, d) ? 1 : 0;

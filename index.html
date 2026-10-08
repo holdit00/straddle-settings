@@ -199,7 +199,7 @@ const SECTIONS = [
 {k:'pip', label:'Pip size', min:0.01, max:1, step:0.01, dec:2, def:0.10, unit:'$', note:'price move that counts as 1 pip'},
 ]},
 ];
-const DIRS = ['Both sides','With candle','Against candle'];
+const DIRS = ['Both','With','Against','With → reverse'];
 const REARMS = ['Off','New straddle','Reverse'];
 const pinReq = q.get('pinreq') === '1';
 const pinEl = document.getElementById('pin');
@@ -233,7 +233,7 @@ TOGGLES.forEach(t => {
 const d = TOGGLE_OFF_DEFAULT.includes(t) ? 0 : 1;
 orig['t_'+t] = cur['t_'+t] = num('t_'+t, d) ? 1 : 0;
 });
-orig.dir = cur.dir = Math.min(2, Math.max(0, Math.round(num('dir', 0))));
+orig.dir = cur.dir = Math.min(3, Math.max(0, Math.round(num('dir', 0))));
 orig.rearm = cur.rearm = Math.min(2, Math.max(0, Math.round(num('rearm', 2))));
 orig.run = cur.run = num('run', 1) ? 1 : 0;
 document.getElementById('sym').textContent =
@@ -322,7 +322,7 @@ s.fields.forEach(f => card.appendChild(buildRow(f)));
 if (s.dir){
 const row = document.createElement('div');
 row.className = 'row';
-row.innerHTML = `<div class="lbl"><b>Direction</b><small>Which pending orders to place</small></div><div class="seg" role="group"></div>`;
+row.innerHTML = `<div class="lbl"><b>Direction</b><small>With → reverse: trade with the candle; if it fails, trade the other way once</small></div><div class="seg" role="group"></div>`;
 const seg = row.querySelector('.seg');
 DIRS.forEach((d, i) => {
 const b = document.createElement('button');

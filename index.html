@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>StraddleBody settings</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+--bg: var(--tg-theme-secondary-bg-color, #eef0f4);
+--card: var(--tg-theme-section-bg-color, var(--tg-theme-bg-color, #ffffff));
+--text: var(--tg-theme-text-color, #15171c);
+--hint: var(--tg-theme-hint-color, #7d8492);
+--accent: var(--tg-theme-button-color, #2b7de9);
+--accent-text: var(--tg-theme-button-text-color, #ffffff);
+--head: var(--tg-theme-section-header-text-color, var(--hint));
+--line: color-mix(in srgb, var(--hint) 22%, transparent);
+--gold: #c9971c;
+--warn: #d9534f;
+}
+@media (prefers-color-scheme: dark){
+:root:not(.tg){ --bg:#17191f; --card:#22252d; --text:#eceef3; --hint:#8b92a1; }
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; background:var(--bg); color:var(--text);
+font:15px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", Roboto, "Segoe UI", sans-serif;
+-webkit-tap-highlight-color:transparent; }
+body{ padding:12px 12px calc(96px + env(safe-area-inset-bottom,0px)); }
+.top{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+background:var(--card); border-radius:14px; padding:14px 16px; margin-bottom:18px; }
+.top h1{ margin:0; font-size:17px; font-weight:650; }
+.top .sym{ color:var(--hint); font-size:13px; margin-top:2px; }
+.state{ font-size:13px; font-weight:600; margin-top:6px; }
+.state.on{ color:#2e9e5b; } .state.off{ color:var(--warn); }
+.pnl{ background:var(--card); border-radius:14px; padding:4px 16px 12px; margin-bottom:18px; }
+.pr{ display:grid; grid-template-columns:1fr auto auto; align-items:baseline; column-gap:14px;
+padding:12px 0; border-bottom:1px solid var(--line); }
+.pr:last-of-type{ border-bottom:0; }
+.pr .k b{ font-weight:500; display:block; }
+.pr .k small{ color:var(--hint); font-size:12.5px; }
+.pr .usd{ font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:-.01em; text-align:right; }
+.pr .pips{ font-size:15px; font-weight:600; font-variant-numeric:tabular-nums; text-align:right; min-width:78px;
+padding:3px 8px; border-radius:8px; background:var(--bg); }
+.up{ color:#2e9e5b; } .down{ color:var(--warn); } .flat{ color:var(--hint); }
+.stamp{ color:var(--hint); font-size:12.5px; margin-top:2px; }
+.pinbox{ background:var(--card); border-radius:14px; padding:12px 16px; margin-bottom:18px;
+display:none; align-items:center; gap:12px; }
+.pinbox .lbl small{ color:var(--hint); }
+.pinbox input{ width:120px; height:38px; border:0; border-radius:10px; background:var(--bg); color:var(--text);
+text-align:center; font-family:inherit; font-size:18px; font-weight:600; letter-spacing:.25em; outline:none; }
+.pinbox input:focus{ box-shadow:0 0 0 2px var(--accent); }
+.notice{ background:color-mix(in srgb, var(--warn) 14%, var(--card)); color:var(--text);
+border-radius:12px; padding:12px 14px; margin-bottom:16px; font-size:14px; display:none; }
+section{ margin-bottom:18px; }
+.sh{ display:flex; align-items:center; justify-content:space-between;
+color:var(--head); font-size:13px; font-weight:600; padding:0 6px 6px; }
+.card{ background:var(--card); border-radius:14px; overflow:hidden; }
+.card.disabled .row{ opacity:.45; }
+.row{ padding:12px 16px 14px; border-top:1px solid var(--line); }
+.row:first-child{ border-top:0; }
+.r1{ display:flex; align-items:center; gap:10px; }
+.lbl{ flex:1; min-width:0; }
+.lbl b{ font-weight:500; display:block; }
+.lbl small{ color:var(--hint); font-size:12.5px; display:block; margin-top:1px; }
+.row.changed .lbl b::after{ content:""; display:inline-block; width:7px; height:7px; border-radius:50%;
+background:var(--gold); margin-left:7px; vertical-align:middle; }
+.num{ display:flex; align-items:center; background:var(--bg); border-radius:10px; }
+.num button{ width:34px; height:36px; border:0; background:none; color:var(--accent);
+font-size:20px; line-height:1; cursor:pointer; }
+.num input{ width:68px; height:36px; border:0; background:none; color:var(--text); text-align:center;
+font-family:inherit; font-size:16px; font-weight:600; line-height:1; font-variant-numeric:tabular-nums; outline:none; padding:0; }
+.num:focus-within{ box-shadow:0 0 0 2px var(--accent); }
+input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:28px; margin:10px 0 0;
+background:transparent; }
+input[type=range]::-webkit-slider-runnable-track{ height:4px; border-radius:2px;
+background:linear-gradient(var(--accent),var(--accent)) 0/var(--p,0%) 100% no-repeat, var(--line); }
+input[type=range]::-moz-range-track{ height:4px; border-radius:2px; background:var(--line); }
+input[type=range]::-moz-range-progress{ height:4px; border-radius:2px; background:var(--accent); }
+input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:24px; height:24px; border-radius:50%;
+background:#fff; margin-top:-10px; box-shadow:0 1px 4px rgba(0,0,0,.3); }
+input[type=range]::-moz-range-thumb{ width:24px; height:24px; border:0; border-radius:50%; background:#fff;
+box-shadow:0 1px 4px rgba(0,0,0,.3); }
+input[type=range]:focus-visible::-webkit-slider-thumb{ outline:2px solid var(--accent); outline-offset:2px; }
+/* switch */
+.sw{ position:relative; width:50px; height:30px; flex:none; }
+.sw input{ position:absolute; inset:0; opacity:0; margin:0; cursor:pointer; }
+.sw span{ position:absolute; inset:0; border-radius:15px; background:var(--line); transition:background .15s; pointer-events:none; }
+.sw span::after{ content:""; position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%;
+background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:transform .15s; }
+.sw input:checked + span{ background:#34c759; }
+.sw input:checked + span::after{ transform:translateX(20px); }
+.sw input:focus-visible + span{ outline:2px solid var(--accent); outline-offset:2px; }
+.seg{ display:flex; background:var(--bg); border-radius:10px; padding:3px; margin-top:10px; }
+.seg button{ flex:1; border:0; background:none; color:var(--text); padding:8px 4px; border-radius:8px;
+font-family:inherit; font-size:13.5px; font-weight:500; line-height:1; cursor:pointer; }
+.seg button[aria-pressed=true]{ background:var(--card); box-shadow:0 1px 3px rgba(0,0,0,.18); font-weight:650; }
+.warn{ color:var(--warn); font-size:12.5px; margin-top:6px; display:none; }
+.fallback{ position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom,0px));
+height:50px; border:0; border-radius:12px; background:var(--accent); color:var(--accent-text);
+font-family:inherit; font-size:16px; font-weight:600; line-height:1; display:none; }
+@media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+<div class="top">
+<div>
+<h1>StraddleBody EA</h1>
+<div class="sym" id="sym"></div>
+<div class="state" id="state"></div>
+</div>
+<label class="sw" aria-label="EA running"><input type="checkbox" id="run"><span></span></label>
+</div>
+<div class="pnl" id="pnl" aria-label="Profit and loss">
+<div class="pr">
+<div class="k"><b>Open trades</b><small id="openN"></small></div>
+<div class="usd" id="opl"></div>
+<div class="pips" id="opp"></div>
+</div>
+<div class="pr">
+<div class="k"><b>Today</b><small id="dayN"></small></div>
+<div class="usd" id="dpl"></div>
+<div class="pips" id="dpp"></div>
+</div>
+<div class="stamp" id="stamp"></div>
+</div>
+<div class="pinbox" id="pinbox">
+<div class="lbl"><b>PIN</b><small>Needed to save changes</small></div>
+<input type="password" id="pin" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="PIN">
+</div>
+<div class="notice" id="notice">Open this page with the Settings button in your Telegram bot. Opened anywhere else, it can't send changes to the EA.</div>
+<div id="app"></div>
+<button class="fallback" id="saveFallback" type="button">Save to EA</button>
+<script>
+const tg = window.Telegram && window.Telegram.WebApp;
+const inTelegram = !!(tg && tg.initData);
+if (inTelegram) document.documentElement.classList.add('tg');
+const q = new URLSearchParams(location.search);
+const num = (k, d) => { const v = parseFloat(q.get(k)); return isFinite(v) ? v : d; };
+// pip-based fields show the price move in $ underneath
+const SECTIONS = [
+{ title:'Trade', fields:[
+{k:'lot',  label:'Lot size',        min:0.01,max:5,   step:0.01,dec:2, def:0.13},
+{k:'dist', label:'Pending distance',min:1,   max:100, step:0.5, dec:1, def:10, pips:true, note:'from price'},
+{k:'sl',   label:'Stop loss',       min:0,   max:100, step:0.5, dec:1, def:10, pips:true, zero:'no stop loss'},
+{k:'tp',   label:'Take profit',     min:0,   max:200, step:0.5, dec:1, def:0,  pips:true, zero:'off'},
+]},
+{ title:'Entry rule', toggle:'body', fields:[
+{k:'body', label:'Min M1 candle body', min:0, max:100, step:0.5, dec:1, def:10, pips:true, note:'last candle must be bigger'},
+], dir:true, extraToggle:{k:'oneper', label:'One trade per candle', note:'Wait for a new qualifying candle after each trade'} },
+{ title:'Trailing stop', toggle:'trail', fields:[
+{k:'tstart', label:'Start after',  min:0,   max:50, step:0.5, dec:1, def:4,   pips:true, note:'profit'},
+{k:'tdist',  label:'Distance',     min:0.5, max:50, step:0.5, dec:1, def:3,   pips:true, note:'behind price'},
+{k:'tstep',  label:'Step',         min:0.1, max:10, step:0.1, dec:1, def:0.5, pips:true},
+]},
+{ title:'Never go negative', toggle:'be', fields:[
+{k:'betrig', label:'Lock profit at', min:0, max:50, step:0.5, dec:1, def:3, pips:true, note:'profit reached'},
+{k:'belock', label:'Locked profit',  min:0, max:20, step:0.5, dec:1, def:1, pips:true, note:'kept above entry'},
+]},
+{ title:'Filters', fields:[
+{k:'spread', label:'Max spread',     min:0, max:30, step:0.5, dec:1, def:5, pips:true, zero:'off'},
+{k:'expiry', label:'Cancel unfilled pendings after', min:0, max:60, step:1, dec:0, def:3, unit:'min', zero:'never'},
+]},
+{ title:'Daily limits', fields:[
+{k:'dloss',     label:'Daily loss limit',  min:0, max:5000, step:10, dec:2, def:0, unit:'$', zero:'off'},
+{k:'dtarget',   label:'Daily profit target',min:0,max:5000, step:10, dec:2, def:0, unit:'$', zero:'off'},
+{k:'maxtrades', label:'Max trades per day',min:0, max:200,  step:1,  dec:0, def:0, zero:'unlimited'},
+]},
+{ title:'Trading hours (server time)', toggle:'session', fields:[
+{k:'start', label:'Start hour', min:0, max:24, step:1, dec:0, def:0},
+{k:'end',   label:'End hour',   min:0, max:24, step:1, dec:0, def:24},
+]},
+{ title:'Advanced', fields:[
+{k:'pip', label:'Pip size', min:0.01, max:1, step:0.01, dec:2, def:0.10, unit:'$', note:'price move that counts as 1 pip'},
+]},
+];
+const DIRS = ['Both sides','With candle','Against candle'];
+const pinReq = q.get('pinreq') === '1';
+const pinEl = document.getElementById('pin');
+if (pinReq) document.getElementById('pinbox').style.display = 'flex';
+pinEl.addEventListener('input', () => { pinEl.value = pinEl.value.replace(/\D/g, ''); refresh(); });
+// P/L snapshot sent by the EA in the link
+(function showPnl(){
+const ccy = q.get('cur') || 'USD';
+const sym = ({USD:'$', EUR:'€', GBP:'£', USC:'¢'})[ccy] || '';
+const tone = v => v > 0.004 ? 'up' : (v < -0.004 ? 'down' : 'flat');
+const money = v => (v > 0 ? '+' : v < 0 ? '−' : '') + sym + Math.abs(v).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2}) + (sym ? '' : ' ' + ccy);
+const pips = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + ' pips';
+const set = (id, v, f) => { const el = document.getElementById(id); el.textContent = f(v); el.classList.add(tone(v)); };
+const opl = num('opl', 0), opp = num('opp', 0), dpl = num('dpl', 0), dpp = num('dpp', 0);
+set('opl', opl, money); set('opp', opp, pips);
+set('dpl', dpl, money); set('dpp', dpp, pips);
+const npos = Math.round(num('npos', 0)), ntr = Math.round(num('ntr', 0));
+document.getElementById('openN').textContent = npos ? npos + (npos > 1 ? ' positions' : ' position') : 'No open trades';
+document.getElementById('dayN').textContent = ntr + (ntr === 1 ? ' trade' : ' trades') + ', includes open';
+const ts = q.get('ts');
+document.getElementById('stamp').textContent = ts
+? 'As of ' + ts + ' server time. Tap Status in the bot, then Settings, for fresh numbers.'
+: 'No P/L data in this link yet. Update the EA, then tap Status in the bot.';
+})();
+// state
+const orig = {}, cur = {};
+SECTIONS.forEach(s => s.fields.forEach(f => { orig[f.k] = cur[f.k] = num(f.k, f.def); }));
+['body','trail','be','oneper','session'].forEach(t => {
+const d = (t === 'session') ? 0 : 1;
+orig['t_'+t] = cur['t_'+t] = num('t_'+t, d) ? 1 : 0;
+});
+orig.dir = cur.dir = Math.min(2, Math.max(0, Math.round(num('dir', 0))));
+orig.run = cur.run = num('run', 1) ? 1 : 0;
+document.getElementById('sym').textContent =
+(q.get('sym') || 'XAUUSD') + (q.get('magic') ? '  #' + q.get('magic') : '');
+const fmt = (v, d) => Number(v).toFixed(d);
+const pipVal = () => cur.pip > 0 ? cur.pip : 0.1;
+function subText(f){
+const v = cur[f.k];
+if (f.zero && v === 0) return f.zero[0].toUpperCase() + f.zero.slice(1);
+const usd = '$' + (v * pipVal()).toFixed(2);
+if (f.pips) return f.note ? f.note[0].toUpperCase() + f.note.slice(1) + ' (' + usd + ')' : usd + ' price move';
+return f.note ? f.note[0].toUpperCase() + f.note.slice(1) : (f.unit === '$' ? 'In account currency' : '');
+}
+const rows = {};
+function buildRow(f){
+const row = document.createElement('div');
+row.className = 'row';
+row.innerHTML = `
+<div class="r1">
+<div class="lbl"><b>${f.label}</b><small></small></div>
+<div class="num">
+<button type="button" aria-label="Decrease ${f.label}">−</button>
+<input type="text" inputmode="decimal" aria-label="${f.label}">
+<button type="button" aria-label="Increase ${f.label}">+</button>
+</div>
+</div>
+<input type="range" min="${f.min}" max="${f.max}" step="${f.step}" aria-label="${f.label} slider">
+<div class="warn"></div>`;
+const [minus, plus] = row.querySelectorAll('.num button');
+const box = row.querySelector('.num input');
+const rng = row.querySelector('input[type=range]');
+rows[f.k] = {row, box, rng, f, small: row.querySelector('small'), warn: row.querySelector('.warn')};
+const setVal = (v, fromBox) => {
+if (!isFinite(v)) v = cur[f.k];
+v = Math.max(0, v);
+if (f.k === 'pip' && v <= 0) v = cur.pip;
+if (f.k === 'start' || f.k === 'end') v = Math.min(24, v);
+v = parseFloat(fmt(v, f.dec));
+cur[f.k] = v;
+if (!fromBox) box.value = fmt(v, f.dec);
+refresh();
+};
+rng.addEventListener('input', () => { setVal(parseFloat(rng.value)); haptic(); });
+box.addEventListener('change', () => { setVal(parseFloat(box.value.replace(',', '.'))); box.value = fmt(cur[f.k], f.dec); });
+box.addEventListener('keydown', e => { if (e.key === 'Enter') box.blur(); });
+box.addEventListener('focus', () => box.select());
+minus.addEventListener('click', () => { setVal(cur[f.k] - f.step); haptic(); });
+plus .addEventListener('click', () => { setVal(cur[f.k] + f.step); haptic(); });
+box.value = fmt(cur[f.k], f.dec);
+return row;
+}
+function buildSwitchRow(key, label, note){
+const row = document.createElement('div');
+row.className = 'row';
+row.innerHTML = `<div class="r1"><div class="lbl"><b>${label}</b><small>${note||''}</small></div>
+<label class="sw" aria-label="${label}"><input type="checkbox"><span></span></label></div>`;
+const cb = row.querySelector('input');
+cb.checked = !!cur[key];
+cb.addEventListener('change', () => { cur[key] = cb.checked ? 1 : 0; haptic(); refresh(); });
+rows[key] = {row, cb};
+return row;
+}
+const app = document.getElementById('app');
+const cards = {};
+SECTIONS.forEach(s => {
+const sec = document.createElement('section');
+const head = document.createElement('div');
+head.className = 'sh';
+head.innerHTML = `<span>${s.title}</span>`;
+const card = document.createElement('div');
+card.className = 'card';
+if (s.toggle){
+const key = 't_' + s.toggle;
+const sw = document.createElement('label');
+sw.className = 'sw';
+sw.setAttribute('aria-label', s.title + ' on or off');
+sw.innerHTML = '<input type="checkbox"><span></span>';
+const cb = sw.querySelector('input');
+cb.checked = !!cur[key];
+cb.addEventListener('change', () => { cur[key] = cb.checked ? 1 : 0; haptic(); refresh(); });
+head.appendChild(sw);
+cards[key] = {card, cb};
+}
+s.fields.forEach(f => card.appendChild(buildRow(f)));
+if (s.dir){
+const row = document.createElement('div');
+row.className = 'row';
+row.innerHTML = `<div class="lbl"><b>Direction</b><small>Which pending orders to place</small></div><div class="seg" role="group"></div>`;
+const seg = row.querySelector('.seg');
+DIRS.forEach((d, i) => {
+const b = document.createElement('button');
+b.type = 'button'; b.textContent = d;
+b.addEventListener('click', () => { cur.dir = i; haptic(); refresh(); });
+seg.appendChild(b);
+});
+rows.dir = {row, seg};
+card.appendChild(row);
+}
+if (s.extraToggle) card.appendChild(buildSwitchRow('t_' + s.extraToggle.k, s.extraToggle.label, s.extraToggle.note));
+sec.append(head, card);
+app.appendChild(sec);
+});
+const runCb = document.getElementById('run');
+runCb.checked = !!cur.run;
+runCb.addEventListener('change', () => { cur.run = runCb.checked ? 1 : 0; haptic(); refresh(); });
+function changedKeys(){ return Object.keys(cur).filter(k => cur[k] !== orig[k]); }
+function refresh(){
+// field rows
+Object.values(rows).forEach(r => {
+if (!r.f) return;
+const f = r.f, v = cur[f.k];
+const p = Math.max(0, Math.min(100, (Math.min(v, f.max) - f.min) / (f.max - f.min) * 100));
+r.rng.value = Math.min(v, f.max);
+r.rng.style.setProperty('--p', p + '%');
+r.small.textContent = subText(f);
+r.row.classList.toggle('changed', v !== orig[f.k]);
+});
+// break-even sanity
+const bad = cur.betrig > 0 && cur.belock >= cur.betrig;
+rows.belock.warn.style.display = bad ? 'block' : 'none';
+rows.belock.warn.textContent = 'Must be smaller than "Lock profit at". The EA will halve it.';
+const tightTrail = cur.t_trail && cur.tdist * pipVal() < 0.2;
+rows.tdist.warn.style.display = tightTrail ? 'block' : 'none';
+rows.tdist.warn.textContent = 'Tighter than a normal gold spread. Spread noise may close trades early.';
+// switches / cards
+Object.entries(cards).forEach(([k, c]) => { c.cb.checked = !!cur[k]; c.card.classList.toggle('disabled', !cur[k]); });
+if (rows.t_oneper){ rows.t_oneper.cb.checked = !!cur.t_oneper; rows.t_oneper.row.classList.toggle('changed', cur.t_oneper !== orig.t_oneper); }
+[...rows.dir.seg.children].forEach((b, i) => b.setAttribute('aria-pressed', i === cur.dir));
+rows.dir.row.classList.toggle('changed', cur.dir !== orig.dir);
+const st = document.getElementById('state');
+st.textContent = cur.run ? 'Running' : 'Paused';
+st.className = 'state ' + (cur.run ? 'on' : 'off');
+// save button
+const n0 = changedKeys().length;
+const needPin = pinReq && !pinEl.value;
+const n = needPin ? 0 : n0;
+const label = !n0 ? 'No changes' : (needPin ? 'Enter PIN to save' : `Save ${n} change${n > 1 ? 's' : ''} to EA`);
+if (inTelegram){
+tg.MainButton.setText(label);
+n ? tg.MainButton.enable() : tg.MainButton.disable();
+tg.MainButton.color = n ? (tg.themeParams.button_color || '#2b7de9') : (tg.themeParams.hint_color || '#999999');
+n ? tg.enableClosingConfirmation() : tg.disableClosingConfirmation();
+} else {
+const fb = document.getElementById('saveFallback');
+fb.textContent = label; fb.disabled = !n;
+}
+}
+function payload(){
+const parts = [];
+SECTIONS.forEach(s => s.fields.forEach(f => parts.push(f.k + '=' + fmt(cur[f.k], f.dec))));
+['body','trail','be','oneper','session'].forEach(t => parts.push('t_' + t + '=' + cur['t_' + t]));
+parts.push('dir=' + cur.dir, 'run=' + cur.run);
+if (pinReq) parts.push('pin=' + pinEl.value);
+return 'SET|' + parts.join(';');
+}
+function save(){
+if (!changedKeys().length) return;
+if (pinReq && !pinEl.value){ pinEl.focus(); return; }
+if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+if (inTelegram){ tg.disableClosingConfirmation(); tg.sendData(payload()); }
+}
+function haptic(){ if (inTelegram && tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); }
+if (inTelegram){
+tg.ready(); tg.expand();
+tg.MainButton.show();
+tg.MainButton.onClick(save);
+} else {
+document.getElementById('notice').style.display = 'block';
+const fb = document.getElementById('saveFallback');
+fb.style.display = 'block';
+fb.addEventListener('click', () => alert('Open this from the Settings button in Telegram to save.\n\n' + payload()));
+}
+refresh();
+</script>
+</body>
+</html>

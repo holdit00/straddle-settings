@@ -178,7 +178,11 @@ const SECTIONS = [
 {k:'pnear', label:'Price gets within', min:0, max:10, step:0.5, dec:1, def:2, pips:true, note:'of a pending order'},
 {k:'pback', label:'Then pulls back',   min:0.5, max:20, step:0.5, dec:1, def:3, pips:true, note:'without filling = fakeout'},
 {k:'rmax',  label:'Max rearms per candle', min:0, max:10, step:1, dec:0, def:1, zero:'unlimited'},
-]},
+{k:'spkpips',  label:'Spike = price moves', min:0, max:20, step:0.5, dec:1, def:4, pips:true, zero:'off', note:'pull orders if price moves this fast'},
+{k:'spksec',   label:'Spike within',  min:0.5, max:10, step:0.5, dec:1, def:2, unit:'sec', note:'seconds'},
+{k:'calmpips', label:'Rearm when calm below', min:0.5, max:10, step:0.5, dec:1, def:1.5, pips:true, note:'movement over 3 seconds'},
+{k:'sprmult',  label:'Spread spike at', min:0, max:5, step:0.1, dec:1, def:2, zero:'off', note:'times normal spread'},
+], extraToggles:[{k:'spike', label:'Spike guard', note:'Pulls pending orders before a spike can fill them, rearms when calm'}] },
 { title:'After-entry guard (closes the trade)', toggle:'guard', fields:[
 {k:'gsec',   label:'Check after',        min:1, max:60, step:1,   dec:0, def:15, unit:'sec', note:'seconds after the trade opens'},
 {k:'gprog',  label:'Fakeout if best profit below', min:0, max:10, step:0.5, dec:1, def:1, pips:true},
@@ -218,7 +222,7 @@ document.getElementById('stamp').textContent = ts
 // state
 const orig = {}, cur = {};
 SECTIONS.forEach(s => s.fields.forEach(f => { orig[f.k] = cur[f.k] = num(f.k, f.def); }));
-const TOGGLES = ['body','trail','be','oneper','session','sprsl','sprtp','guard','glive','pguard'];
+const TOGGLES = ['body','trail','be','oneper','session','sprsl','sprtp','guard','glive','pguard','spike'];
 const TOGGLE_OFF_DEFAULT = ['session','sprsl','sprtp','glive','guard'];
 TOGGLES.forEach(t => {
 const d = TOGGLE_OFF_DEFAULT.includes(t) ? 0 : 1;

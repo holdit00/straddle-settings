@@ -150,6 +150,7 @@ const SECTIONS = [
 ]},
 { title:'Entry rule', toggle:'body', fields:[
 {k:'body', label:'Min M1 candle body', min:0, max:100, step:0.5, dec:1, def:10, pips:true, note:'last candle must be bigger'},
+{k:'maxbody', label:'Max M1 candle body', min:0, max:100, step:0.5, dec:1, def:15, pips:true, zero:'off', note:'skip candles bigger than this (move likely exhausted)'},
 {k:'skipsec', label:'Wait after new candle', min:0, max:59, step:1, dec:0, def:10, unit:'sec', zero:'off', note:'no new straddle in the first seconds of each M1 candle'},
 ], dir:true, extraToggles:[{k:'oneper', label:'One trade per candle', note:'Wait for a new qualifying candle after each trade'}] },
 { title:'Trailing stop', toggle:'trail', fields:[

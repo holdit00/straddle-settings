@@ -151,8 +151,10 @@ const SECTIONS = [
 { title:'Entry rule', toggle:'body', fields:[
 {k:'body', label:'Min M1 candle body', min:0, max:100, step:0.5, dec:1, def:10, pips:true, note:'last candle must be bigger'},
 {k:'maxbody', label:'Max M1 candle body', min:0, max:100, step:0.5, dec:1, def:15, pips:true, zero:'off', note:'skip candles bigger than this (move likely exhausted)'},
+{k:'pullpct', label:'Pullback depth', min:10, max:90, step:5, dec:0, def:40, unit:'%', note:'% of the signal candle body to wait for (Pullback entry on)'},
 {k:'skipsec', label:'Wait after new candle', min:0, max:59, step:1, dec:0, def:10, unit:'sec', zero:'off', note:'no new straddle in the first seconds of each M1 candle'},
-], dir:true, extraToggles:[{k:'oneper', label:'One trade per candle', note:'Wait for a new qualifying candle after each trade'}] },
+], dir:true, extraToggles:[{k:'oneper', label:'One trade per candle', note:'Wait for a new qualifying candle after each trade'},
+{k:'pullback', label:'Pullback entry', note:'Buy the dip after a green candle / sell the rally after a red one, with a limit order instead of chasing'}] },
 { title:'Trailing stop', toggle:'trail', fields:[
 {k:'tstart', label:'Commission',   min:0,   max:20, step:0.1, dec:1, def:0,   pips:true, zero:'auto-detect from the account', note:'trailing starts once profit covers this'},
 {k:'tdist',  label:'Distance',     min:0.5, max:50, step:0.5, dec:1, def:1.5, pips:true, note:'behind price'},
@@ -228,8 +230,8 @@ document.getElementById('stamp').textContent = ts
 // state
 const orig = {}, cur = {};
 SECTIONS.forEach(s => s.fields.forEach(f => { orig[f.k] = cur[f.k] = num(f.k, f.def); }));
-const TOGGLES = ['body','trail','be','oneper','session','sprsl','sprtp','guard','pguard','spike','confirm'];
-const TOGGLE_OFF_DEFAULT = ['session','sprsl','sprtp','guard'];
+const TOGGLES = ['body','trail','be','oneper','session','sprsl','sprtp','guard','pguard','spike','confirm','pullback'];
+const TOGGLE_OFF_DEFAULT = ['session','sprsl','sprtp','guard','pullback'];
 TOGGLES.forEach(t => {
 const d = TOGGLE_OFF_DEFAULT.includes(t) ? 0 : 1;
 orig['t_'+t] = cur['t_'+t] = num('t_'+t, d) ? 1 : 0;
